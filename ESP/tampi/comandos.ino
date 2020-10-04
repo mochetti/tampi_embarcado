@@ -124,7 +124,7 @@ void acao(int i) {
 
     case 3:         // preto - microfone (funcao esq)
       Serial.println("microfone");
-      if (microfone()) funcaoEsq();
+      girarEsq(500);
       break;
 
     case 4:         // amarelo - funcao esq
@@ -139,19 +139,20 @@ void acao(int i) {
       break;
 
     case 6:         // azul - gira esq
-      Serial.println("gira esq");
+//      Serial.println("gira esq");
       girarEsq(500);
       delay(1000);
       break;
 
     case 7:         // lilas - funcao dir
       Serial.println("funcao dir");
-      funcaoDir();
+      girarEsq(500);
+//      funcaoDir();
       break;
 
     case 8:       // dourado - ultrassonico (funcao dir)
       Serial.println("ultrassonico");
-      if (ultrassonico()) funcaoDir();
+      ultrassonico(0);
       break;
 
     case 9:         // vermelho - anda

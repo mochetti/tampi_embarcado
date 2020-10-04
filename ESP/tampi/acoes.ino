@@ -32,7 +32,7 @@ void motor(int velE, int velD) {
 void andar(int analog) {
   //  Serial.println("ACAO: andar");
   int tempo = map(analog, 0, 1023, 0, 2000);
-  motor(400, 400);
+  motor(velGeral, velGeral);
   delay(tempo);
   motor(0, 0);
 }
@@ -42,7 +42,7 @@ void girarEsq(int analog) {
   //  Serial.println("ACAO: girar pra esquerda");
 
   int tempo = map(analog, 0, 1023, 0, tempoGiroEixo);
-  motor(-400, 400);
+  motor(-velGeral, velGeral);
   delay(tempo);
   motor(0, 0);
 }
@@ -52,7 +52,7 @@ void girarDir(int analog) {
   //  Serial.println("ACAO: girar pra direita");
 
   int tempo = map(analog, 0, 1023, 0, tempoGiroEixo);
-  motor(400, -400);
+  motor(velGeral, -velGeral);
   delay(tempo);
   motor(0, 0);
 }
@@ -91,12 +91,12 @@ void buzina(int freq, int tempo) {
 void farol(int analog) {
   //  Serial.println("ACAO: farol");
   int tempo = map(analog, 0, 1023, 0, 3000);
-  dWrite(farolEsq, 1);    // acende
-  dWrite(farolDir, 1);
+  dWrite(farolEsqPin, 1);    // acende
+  dWrite(farolDirPin, 1);
   shift();
   delay(2000);
-  dWrite(farolEsq, 0);    // apaga
-  dWrite(farolDir, 0);
+  dWrite(farolEsqPin, 0);    // apaga
+  dWrite(farolDirPin, 0);
   shift();
 }
 
@@ -104,10 +104,26 @@ void seta (int analog) {
 
 }
 
-bool microfone() {
-  return false;
+void microfone(int analog) {
+  if (aRead(micPin) > analog) {
+    funcaoEsq();
+  }
 }
 
-bool ultrassonico() {
-  return false;
+void ultrassonico(int analog) {
+  if (distancia() < analog) {
+    funcaoDir();
+  }
+}
+
+void ldrEsq(int analog) {
+  if (aRead(ldrEsqPin) > analog) {
+    funcaoEsq();
+  }
+}
+
+void ldrDir(int analog) {
+  if (aRead(ldrDirPin) > analog) {
+    funcaoDir();
+  }
 }

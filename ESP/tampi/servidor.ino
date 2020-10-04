@@ -43,8 +43,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
       Serial.printf("EVENTO WS: get Text: %s\n", payload);
 
       if (payload[0] == 'a') acoes(payload);
-//      else if (payload[0] == 'm') movimento(payload);
-//      else if (payload[0] == 'm') Serial.println("data");
+      else if (payload[0] == 'm') movimento(payload);
       else if(payload[0] == 'b') buzzer(payload);
       else if (payload[0] == 's') testeBuzzer(payload);
 

@@ -15,8 +15,8 @@ const int motorEsqB = 29;
 const int motorDirA = 28;
 const int motorDirB = 27;
 
-const int farolEsq = 26;
-const int farolDir = 25;
+const int farolEsqPin = 26;
+const int farolDirPin = 25;
 
 const int motorEsqPWM = D4;  // pinos digitais no ESP
 const int motorDirPWM = D8;
@@ -48,6 +48,10 @@ const int pot[] = {
   20, 19, 18                        // potenciometros funcao B
 };
 
+const int ldrEsqPin = 0;
+const int ldrDirPin = 0;
+const int micPin = 0;
+
 // Constantes empíricas de movimento
 const int tempoGiroEixo = 2000;     // em ms
 
@@ -65,6 +69,8 @@ bool mudancaShiftPinos = false;   // controla se houve mudanca nos pinos dos 745
 
 int tampinhas[14]; // array de acoes das tampinhas
 int potenciometros[14]; // array dos potenciometros
+
+int velGeral = 600;
 
 void setup() {
 
@@ -89,7 +95,7 @@ void setup() {
   buzina(600, 8);
 
   //chMestra = chaveMestra();
-  chMestra = 0;
+  chMestra = 2;
   switch (chMestra) {
     case 0:   // leitura somente das tampinhas
       Serial.println("case 0: tampinhas");
