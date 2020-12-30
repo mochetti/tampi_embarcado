@@ -1,4 +1,9 @@
-// tampi 1.0 - www.github.com/mochetti/tampi
+/*  Tampi 1.0
+ *  
+ *  www.github.com/mochetti/tampi_embarcado
+ *  
+ *  by Thiago Mochetti
+*/
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>            // bibliotecas do servidor          
@@ -7,19 +12,10 @@
 
 WebSocketsServer webSocket(81);    // create a websocket server on port 81
 
+// Pinos do NodeMCU
 
-// Pinos gerais
-
-const int motorEsqA = 30;    // pinos digitais nos 74595
-const int motorEsqB = 29;
-const int motorDirA = 28;
-const int motorDirB = 27;
-
-const int farolEsqPin = 26;
-const int farolDirPin = 25;
-
-const int motorEsqPWM = D4;  // pinos digitais no ESP
-const int motorDirPWM = D8;
+const int pwmEsq = D4;  // pinos digitais no ESP
+const int pwmDir = D8;
 
 int echoPin = D2;  // echo do ultrassonico
 int trigPin = D3;  // trig do ultrassonico
@@ -33,27 +29,65 @@ int buzzerPin = D0;
 int botaoPin = D1;    // botao
 int analogPin = A0;  // pino analogico
 
-// relacao de pinos dos 4067
-const int tamp[] = {
-  15, 14, 13, 12, 11, 10, 9, 8,   //  tampinhas superiores
-  7, 6, 5,                       //  funcao A
-  4, 3, 2                        //  funcao B
+// Pinos dos shifts
+
+const int A4067 = 27;
+const int B4067 = 28;
+const int C4067 = 29;
+const int D4067 = 30;
+const int E4067 = 26;
+const int F4067 = 25;
+
+const int ledsTopo[] = {
+  16, 17, 18, 19, 20, 21, 22, 23
+};
+const int ledsEsq[] = {
+  38, 37, 36, 35, 34, 33
+};
+const int ledsDir[] = {
+  14, 13, 12, 11, 10, 9
 };
 
-const int chaveMestraPin = 14;  // chave mestra
+const int AIN2 = 4;
+const int AIN1 = 3;
+const int STDBY = 2;
+const int BIN1 = 1;
+const int BIN2 = 0;
 
-const int pot[] = {
-  31, 30, 29, 28, 27, 26, 25, 24,   // potenciometros superiores
-  23, 22, 21,                       // potenciometros funcao A
-  20, 19, 18                        // potenciometros funcao B
-};
+const int redPin = 7;
+const int greenPin = 6;
+const int bluePin = 5;
 
+const int farolPin = 24;
+const int irEsqLED = 39;
+const int irDirLED = 15;
+const int setaEsqPin = 32;
+const int setaDirPin = 8;
+
+// Pinos dos mux
+
+const int batPin = 1;
+const int micPin = 16;
 const int ldrEsqPin = 0;
-const int ldrDirPin = 0;
-const int micPin = 0;
+const int ldrDirPin = 25;
+const int encoderEsq = 2;
+const int encoderDir = 23;
+const int irEsqAnalog = 3;
+const int irDirAnalog = 24;
+const int tampinhasTopoPin[] = {
+  10, 11, 12, 13, 19, 20, 21, 22
+};
+const int tampinhasEsqPin[] = {
+  9, 8, 7, 6, 5, 4
+};
+const int tampinhasDirPin[] = {
+  31, 30, 29, 28, 27, 26
+};
 
-// Constantes empíricas de movimento
-const int tempoGiroEixo = 2000;     // em ms
+const int analogExtra1 = 15;
+const int analogExtra2 = 14;
+const int analogExtra3 = 18;
+const int analogExtra4 = 17;
 
 // Variáveis gerais
 
@@ -62,15 +96,15 @@ const char *password = "senha123";
 
 const char* mdnsName = "esp8266"; // Domain name for the mDNS responder
 
-byte shiftPinos[4];   // valores instantâneos dos pinos controlados pelos 74595
-
-int chMestra = 0;  // modo de operacao (0 a 3)
+byte shiftPinos[5];   // valores instantâneos dos pinos controlados pelos 74595
 bool mudancaShiftPinos = false;   // controla se houve mudanca nos pinos dos 74595
 
-int tampinhas[14]; // array de acoes das tampinhas
-int potenciometros[14]; // array dos potenciometros
+int tampinhasTopo[8]; // array de acoes das tampinhas
+int tampinhasEsq[6];
+int tampinhasDir[6];
 
-int velGeral = 600;
+int velGeral = 60;
+int tempoGiroEixo = 200;
 
 void setup() {
 
@@ -83,7 +117,6 @@ void setup() {
   pinMode(botaoPin, INPUT);     // botão como entrada
   pinMode(buzzerPin, OUTPUT);
 
-
   digitalWrite(latchPin, HIGH);
 
   Serial.begin(115200);        // em 9600 notei atrasos no websocket
@@ -94,76 +127,22 @@ void setup() {
   buzina(700, 8);
   buzina(600, 8);
 
-  //chMestra = chaveMestra();
-  chMestra = 2;
-  switch (chMestra) {
-    case 0:   // leitura somente das tampinhas
-      Serial.println("case 0: tampinhas");
-      WiFi.mode(WIFI_OFF);  // desliga o sinal pra poupar bateria
-      break;
-    case 1:   // leitura dos potenciometros
-      break;
-    case 2:   // recebe comandos no servidor
-      Serial.println("case 2: servidor");
-      startAP();                 // Start a Wi-Fi access point, and try to connect to some given access points. Then wait for either an AP or STA connection
-      startWebSocket();            // Start a WebSocket server
-      break;
-    case 3:   // envia comandos no servidor
-      //      startSTA();
-      //      webSocket.begin("192.168.0.123", 81, "/"); // server address, port and URL
-      //      webSocket.onEvent(webSocketEvent); // event handler
-      //      //webSocket.setAuthorization("user", "Password"); // use HTTP Basic Authorization this is optional remove if not needed
-      //      webSocket.setReconnectInterval(5000); // try ever 5000 again if connection has failed
-      //      // start heartbeat (optional)
-      //      // ping server every 15000 ms
-      //      // expect pong from server within 3000 ms
-      //      // consider connection disconnected if pong is not received 2 times
-      //      webSocket.enableHeartbeat(15000, 3000, 2);
-      break;
-  }
+  startAP();
+  startWebSocket();
+//  conectando(true);
 
   Serial.println("fim do setup");
   delay(10);
 }
 
 void loop() {
-  switch (chMestra) {
-    case 0:   // leitura somente das tampinhas
-      //    Serial.println("case 0");
-      if (botao()) {
-        for (int i = 0; i < 8; i++) {
-          acao(tampinhas[i]);           // tampinhas do topo
-        }
-        delay(2000);
-      }
-      break;
-    case 1:   // leitura dos potenciometros também
-      if (botao())
-        for (int i = 0; i < 8; i++) {
-          acao(i);      // tampinhas do topo
-        }
-      delay(2000);
-      break;
-    case 2:   // recebe comandos no servidor
-      //      Serial.println("case 2");
-      webSocket.loop();                           // constantly check for websocket events
-      //      server.handleClient();
-      // TODO: salvar os comandos recebidos em tampinhas[] e potenciometros[]
-
-      break;
-    case 3:   // envia comandos no servidor
-      botao();
-      webSocket.loop();                           // constantly check for websocket events
-      break;
-    case 4: // debug
-      // imprime as leituras dos bocais
-      for (int i = 0; i < 14; i++) {
-        int p = aRead(pot[i]);
-        int t = aRead(tamp[i]);
-        Serial.printf("%d: %d   %d", i, t, p);
-        Serial.println();
-      }
-      delay(1000);
-      break;
-  }
+    webSocket.loop();                           // constantly check for websocket events                        // constantly check for websocket events
+    if(webSocket.connectedClients(false) > 0) {
+    }
+//  leitura();
+//  for (int i = 0; i < tampinhasTopo.length; i++) {
+//    acao(tampinhasTopo[i]);           // tampinhas do topo
+//  }
+//  delay(2000);
+  
 }

@@ -1,17 +1,29 @@
+// ativa os motores
+//void motores(int esq, int dir, int vel) {
+//  analogWrite(motorEsqPWM, vel);
+//  analogWrite(motorDirPWM, vel);
+//
+//  dWrite(motorEsqA, esq);
+//  dWrite(motorEsqB, 1 - esq);
+//  dWrite(motorDirA, dir);
+//  dWrite(motorDirB, 1 - dir);
+//  shift();
+//}
 
+// permite velocidades distintas
 void motor(int velE, int velD) {
 
-  analogWrite(pwmEsq, abs(velE));
-  analogWrite(pwmDir, abs(velD));
+  analogWrite(motorEsqPWM, abs(velE));
+  analogWrite(motorDirPWM, abs(velD));
 
   int sentido = 0;
   if (velE < 0) sentido = 1;
-  dWrite(AIN1, sentido);
-  dWrite(BIN1, 1 - sentido);
+  dWrite(motorEsqA, sentido);
+  dWrite(motorEsqB, 1 - sentido);
   sentido = 0;
   if (velD < 0) sentido = 1;
-  dWrite(AIN2, sentido);
-  dWrite(BIN2, 1 - sentido);
+  dWrite(motorDirA, sentido);
+  dWrite(motorDirB, 1 - sentido);
 
   shift();
 }
@@ -45,7 +57,7 @@ void girarDir(int analog) {
   motor(0, 0);
 }
 
-float distancia() {
+int distancia() {
   //  Serial.println("ACAO: distancia");
   // Clears the trigPin
   digitalWrite(trigPin, LOW);
@@ -61,7 +73,6 @@ float distancia() {
   // Prints the distance on the Serial Monitor
   Serial.print("Distance: ");
   Serial.println(distance);
-  return distance;
 }
 
 void buzina(int analog) {
@@ -80,19 +91,17 @@ void buzina(int freq, int tempo) {
 void farol(int analog) {
   //  Serial.println("ACAO: farol");
   int tempo = map(analog, 0, 1023, 0, 3000);
-  dWrite(farolPin, 1);    // acende
+  dWrite(farolEsqPin, 1);    // acende
+  dWrite(farolDirPin, 1);
   shift();
   delay(2000);
-  dWrite(farolPin, 0);    // apaga
+  dWrite(farolEsqPin, 0);    // apaga
+  dWrite(farolDirPin, 0);
   shift();
 }
 
-void setaEsq(int analog) {
+void seta (int analog) {
 
-}
-
-void setaDir(int analog) {
-  
 }
 
 void microfone(int analog) {

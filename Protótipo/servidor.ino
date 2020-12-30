@@ -10,14 +10,10 @@ void startAP() { // Start a Wi-Fi access point
     Serial.print("Soft-AP IP address = ");
     Serial.println(WiFi.softAPIP());
     Serial.println("Connecting");
-    while (WiFi.softAPgetStationNum() < 1 && millis() < 10000) {  // Wait for the Wi-Fi to connect
+    while (WiFi.softAPgetStationNum() < 1) {  // Wait for the Wi-Fi to connect
       delay(250);
       Serial.print('.');
       buzina(500, 8);
-    }
-    if(WiFi.softAPgetStationNum() < 1)  {
-      WiFi.mode(WIFI_OFF);  // desliga o sinal pra poupar bateria
-      return;
     }
     Serial.println("\r\n");
     Serial.println("Station connected to ESP8266 AP");
@@ -28,17 +24,6 @@ void startAP() { // Start a Wi-Fi access point
   else {
     Serial.println("AP falhou!");
   }
-}
-
-void startWebSocket() { // Start a WebSocket server
-  webSocket.begin();                          // start the websocket server
-  webSocket.onEvent(webSocketEvent);          // if there's an incomming websocket message, go to function 'webSocketEvent'
-  Serial.println("WebSocket server started.");
-//  start heartbeat (optional)
-//  ping server every 15000 ms
-//  expect pong from server within 3000 ms
-//  consider connection disconnected if pong is not received 2 times
-  webSocket.enableHeartbeat(1000, 500, 3);
 }
 
 // evento webSocket como servidor
@@ -57,13 +42,19 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
     case WStype_TEXT:                     // if new text data is received
       Serial.printf("EVENTO WS: get Text: %s\n", payload);
 
-//      if (payload[0] == 'a') acoes(payload);
-//      else if (payload[0] == 'm') movimento(payload);
-//      else if(payload[0] == 'b') buzzer(payload);
-//      else if (payload[0] == 's') testeBuzzer(payload);
+      if (payload[0] == 'a') acoes(payload);
+      else if (payload[0] == 'm') movimento(payload);
+      else if(payload[0] == 'b') buzzer(payload);
+      else if (payload[0] == 's') testeBuzzer(payload);
 
       break;
   }
+}
+
+void startWebSocket() { // Start a WebSocket server
+  webSocket.begin();                          // start the websocket server
+  webSocket.onEvent(webSocketEvent);          // if there's an incomming websocket message, go to function 'webSocketEvent'
+  Serial.println("WebSocket server started.");
 }
 
 //void startMDNS() { // Start the mDNS responder
@@ -154,7 +145,18 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
 
 void startSTA() { // se conecta numa rede wifi
 
-
+  //  WiFi.softAP(ssid, password);             // Start the access point
+  //  Serial.print("Access Point \"");
+  //  Serial.print(ssid);
+  //  Serial.println("\" started\r\n");
+  //
+  //  Serial.println("Connecting");
+  //  while (WiFi.softAPgetStationNum() < 1) {  // Wait for the Wi-Fi to connect
+  //    delay(250);
+  //    Serial.print('.');
+  //  }
+  //  Serial.println("\r\n");
+  //  Serial.println("Station connected to ESP8266 AP");
 }
 
 // evento webSocket como cliente

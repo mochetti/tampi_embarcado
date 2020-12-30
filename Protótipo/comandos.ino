@@ -1,3 +1,17 @@
+// relacao de pinos dos 74595
+const int A4067 = 1;  // ultimo q6
+const int B4067 = 0;  // ultimo q7
+const int C4067 = 7;  // ultimo q0
+const int D4067 = 23;   // segundo q0
+const int E4067 = 31;   // primeiro q0
+const int F4067 = 15;  // terceiro q0
+
+//const int leds[] = {
+//  16, 17, 18, 19, 20, 21, 22, 23,  // leds superiores
+//  24, 25, 26,                      // leds funcao A
+//  27, 28, 29                      // leds funcao B
+//};
+
 // digitalWrite() através dos 74595 (acomoda o pino no array shiftPinos) -- precisa do shift() na sequencia!!
 void dWrite(int pino, int estado) {
   bitWrite(shiftPinos[pino / 8], pino % 8, estado);
@@ -22,6 +36,23 @@ int aRead(int pino) {
   return analogRead(analogPin);
 }
 
+// retorna o modo de operacao da chave mestra
+int chaveMestra() {
+  int valor = aRead(chaveMestraPin);
+  if (valor < 256) return 0;
+  if (valor < 512) return 1;
+  if (valor < 768) return 2;
+  else return 3;
+}
+
+// retorna um array com os valores das tampinhas
+//Tampinha getTampinha(int i, bool p) {
+//  Tampinha t;
+//  t.acao = aRead(tamp[i]);
+//  if (p) t.pot = aRead(pot[i]);
+//  return t;
+//}
+
 /*  valores analogicos
 
      marrom - 1018
@@ -39,32 +70,34 @@ int aRead(int pino) {
 
 */
 
-// Leitura das tampinhas
-void leitura() {
-//  Serial.println("LEITURA: atualizando as tampinhas");
-    for (int i = 0; i < 8; i++) tampinhasTopo[i] = classifica(aRead(tampinhasTopoPin[i]));
-    for (int i = 0; i < 6; i++) tampinhasEsq[i] = classifica(aRead(tampinhasEsqPin[i]));
-    for (int i = 0; i < 6; i++) tampinhasDir[i] = classifica(aRead(tampinhasDirPin[i]));
+bool botao() {
+  if (digitalRead(botaoPin) == LOW) {
+    Serial.println("BOTAO: atualizando as tampinhas");
+    for (int i = 0; i < 14; i++) {
+      int leitura = aRead(pot[i]);
+      potenciometros[i] = map(leitura, 0, 512, 0, 1023);
+      leitura = aRead(tamp[i]);
+      Serial.println(leitura);
+      // classifica cada tampinha
+      if (leitura >= 15 && leitura <= 37) tampinhas[i] = 1;     //cinza
+      else if (leitura > 37 && leitura <= 55) tampinhas[i] = 2; //rosa
+      else if (leitura > 55 && leitura <= 130)tampinhas[i] = 3; //preto
+      else if (leitura > 130 && leitura <= 250)tampinhas[i] = 4; //amarelo
+      else if (leitura > 300 && leitura <= 400)tampinhas[i] = 5; //laranja
+      else if (leitura > 400 && leitura <= 500)tampinhas[i] = 6; //azul
+      else if (leitura > 550 && leitura <= 650)tampinhas[i] = 7; //lilas
+      else if (leitura > 650 && leitura <= 700)tampinhas[i] = 8; //dourado
+      else if (leitura > 700 && leitura <= 750)tampinhas[i] = 9; //vermelho
+      else if (leitura > 750 && leitura <= 850)tampinhas[i] = 10; //branco
+      else if (leitura > 900 && leitura <= 950)tampinhas[i] = 11; //verde
+      else if (leitura > 950 && leitura <= 1021)tampinhas[i] = 12; //marrom
+      else tampinhas[i] = 0;
+    }
+    return true;
+  }
+  return false;
 }
 
-// Classifica a tampinha de acordo com a leitura analógica
-int classifica(int analog) {
-  int valor = 0;
-  if (analog >= 15 && analog <= 37) valor = 1;     //cinza
-  else if (analog > 37 && analog <= 55) valor = 2; //rosa
-  else if (analog > 55 && analog <= 130) valor = 3; //preto
-  else if (analog > 130 && analog <= 250) valor = 4; //amarelo
-  else if (analog > 300 && analog <= 400) valor = 5; //laranja
-  else if (analog > 400 && analog <= 500) valor = 6; //azul
-  else if (analog > 550 && analog <= 650) valor = 7; //lilas
-  else if (analog > 650 && analog <= 700) valor = 8; //dourado
-  else if (analog > 700 && analog <= 750) valor = 9; //vermelho
-  else if (analog > 750 && analog <= 850) valor = 10; //branco
-  else if (analog > 900 && analog <= 950) valor = 11; //verde
-  else if (analog > 950 && analog <= 1021) valor = 12; //marrom
-
-  return valor;
-}
 
 // aqui que a brincadeira começa
 void acao(int i) {
@@ -78,9 +111,9 @@ void acao(int i) {
 
     case 1:     //cinza - loop (trava o código)
       Serial.println("loop");
-//      for (int i = 0; i < 8; i++) {
-//        acao(tampinhas[i]);           // tampinhas do topo
-//      }
+      for (int i = 0; i < 8; i++) {
+        acao(tampinhas[i]);           // tampinhas do topo
+      }
       break;
 
     case 2:         // rosa
@@ -152,7 +185,7 @@ void acao(int i) {
 void funcaoEsq() {
 //  Serial.println("COMANDO: funcao esquerda");
   for (int i = 8; i < 11; i++) {
-//    acao(tampinhas[i]);           // tampinhas do topo
+    acao(tampinhas[i]);           // tampinhas do topo
     //    Serial.println(tampinhas[i]);
   }
 }
@@ -160,7 +193,7 @@ void funcaoEsq() {
 // funcao direita
 void funcaoDir() {
   for (int i = 11; i < 14; i++) {
-//    acao(tampinhas[i]);           // tampinhas do topo
+    acao(tampinhas[i]);           // tampinhas do topo
     //    Serial.println(tampinhas[i]);
   }
 }

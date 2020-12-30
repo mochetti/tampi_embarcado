@@ -17,7 +17,7 @@ void acoes(uint8_t * payload) {
       i++;
       c = payload[i];
     }
-//    tampinhas[t] = atoi(valor);               // converte para int
+    tampinhas[t] = atoi(valor);               // converte para int
     for (int a = 0; a < 4; a++) valor[a] = '\0'; // limpa o array
     v = 0;
     t++;                                      // proxima tampinha
@@ -37,7 +37,7 @@ void acoes(uint8_t * payload) {
       i++;
       c = payload[i];
     }
-//    potenciometros[t] = atoi(valor);               // converte para int
+    potenciometros[t] = atoi(valor);               // converte para int
     for (int a = 0; a < 4; a++) valor[a] = '\0'; // limpa o array
     v = 0;
     t++;                                      // proximo pot
@@ -47,7 +47,7 @@ void acoes(uint8_t * payload) {
 
   // debug dos arrays obtidos
   for (int i = 0; i < 14; i++) {
-//    Serial.printf("%d - t: %d   p: %d\n", i, tampinhas[i], potenciometros[i]);
+    Serial.printf("%d - t: %d   p: %d\n", i, tampinhas[i], potenciometros[i]);
   }
 }
 
