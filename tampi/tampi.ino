@@ -70,8 +70,8 @@ const int batPin = 1;
 const int micPin = 16;
 const int ldrEsqPin = 0;
 const int ldrDirPin = 25;
-const int encoderEsq = 2;
-const int encoderDir = 23;
+const int encEsqPin = 2;
+const int encDirPin = 23;
 const int irEsqAnalog = 3;
 const int irDirAnalog = 24;
 const int tampinhasTopoPin[] = {
@@ -91,7 +91,15 @@ const int analogExtra4 = 17;
 
 // Variáveis gerais
 
-const char *ssid = "tampi";        // essas informações estão no QRCode (?)
+boolean wifi = true;
+unsigned long tempo;
+unsigned long ultimaConexao;
+
+char sensores[30];
+
+WiFiEventHandler stationConnectedHandler;
+WiFiEventHandler stationDisconnectedHandler;
+const char *ssid = "Tampi";        // essas informações estão no QRCode (?)
 const char *password = "senha123";
 
 const char* mdnsName = "esp8266"; // Domain name for the mDNS responder
@@ -103,8 +111,21 @@ int tampinhasTopo[8]; // array de acoes das tampinhas
 int tampinhasEsq[6];
 int tampinhasDir[6];
 
-int velGeral = 60;
-int tempoGiroEixo = 200;
+// Relação entre id das ações e cor da tampinha
+const char *cores[] = {
+  "Vazio",
+  "Cinza",
+  "Amarelo",
+  "Vermelho"
+  };
+
+// Relação de clientes configurados como PC
+int pc[] = {-1, -1, -1, -1, -1};
+// Relação de clientes configurados como app
+int app[] = {-1, -1, -1, -1, -1};
+
+const int velGeral = 60;
+const int tempoGiroEixo = 200;
 
 void setup() {
 
@@ -128,21 +149,41 @@ void setup() {
   buzina(600, 8);
 
   startAP();
-  startWebSocket();
-//  conectando(true);
+  if(wifi) startWebSocket();
 
   Serial.println("fim do setup");
   delay(10);
 }
 
 void loop() {
-    webSocket.loop();                           // constantly check for websocket events                        // constantly check for websocket events
-    if(webSocket.connectedClients(false) > 0) {
+  // Verifica se há conexões ativas
+  if(wifi) {
+    if(WiFi.softAPgetStationNum() > 0) {
+      ultimaConexao = millis();
+      webSocket.loop();
+      // Verifica se há clente no websocket
+      if(webSocket.connectedClients(false) > 0) {
+        if(millis() - tempo > 2000) {
+          tempo = millis();
+//          for(int i=0; i<5; i++) Serial.print(pc[i]);
+//          Serial.println();
+        }
+      }
     }
-//  leitura();
-//  for (int i = 0; i < tampinhasTopo.length; i++) {
-//    acao(tampinhasTopo[i]);           // tampinhas do topo
-//  }
-//  delay(2000);
+    else if (millis() - ultimaConexao > 15000) {
+      wifi = false;
+      WiFi.mode(WIFI_OFF);  // desliga o sinal pra poupar bateria
+    }
+  }
+
+  // Não há conexão
+  else {
+//    sensores();
+//    leitura();
+//    for (int i = 0; i < 8; i++) {
+//      acao(tampinhasTopo[i]);           // tampinhas do topo
+//    }
+    delay(1000);
+  }
   
 }

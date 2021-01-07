@@ -1,43 +1,48 @@
 
-
-void startAP() { // Start a Wi-Fi access point
+// Configura o ESP como ponto de acesso
+void startAP() {
   WiFi.mode(WIFI_AP);
   bool result = WiFi.softAP(ssid, password);             // Start the access point
   if (result == true) {
-    Serial.print("Access Point \"");
+
+    // Callback quando alguém se conecta
+    stationConnectedHandler = WiFi.onSoftAPModeStationConnected(&conexaoCliente);
+    // Callback quando alguém se desconecta
+    stationDisconnectedHandler = WiFi.onSoftAPModeStationDisconnected(&desconexaoCliente);
     Serial.print(ssid);
-    Serial.println("\" started\r\n");
+    Serial.println("\" iniciado !\r\n");
     Serial.print("Soft-AP IP address = ");
     Serial.println(WiFi.softAPIP());
-    Serial.println("Connecting");
-    while (WiFi.softAPgetStationNum() < 1 && millis() < 10000) {  // Wait for the Wi-Fi to connect
-      delay(250);
-      Serial.print('.');
-      buzina(500, 8);
-    }
-    if(WiFi.softAPgetStationNum() < 1)  {
-      WiFi.mode(WIFI_OFF);  // desliga o sinal pra poupar bateria
-      return;
-    }
-    Serial.println("\r\n");
-    Serial.println("Station connected to ESP8266 AP");
-    buzina(500, 8);
-    buzina(700, 8);
-    buzina(650, 8);
+    Serial.println("Esperando conexões...");
   }
   else {
     Serial.println("AP falhou!");
   }
 }
 
+// Callback quando alguém se conecta no ESP
+void conexaoCliente(const WiFiEventSoftAPModeStationConnected& evt) {
+  Serial.print("Cliente entrou: ");
+  Serial.println(macToString(evt.mac));
+}
+// Callback quando alguém se desconecta do ESP
+void desconexaoCliente(const WiFiEventSoftAPModeStationDisconnected& evt) {
+  Serial.print("Cliente caiu: ");
+  Serial.println(macToString(evt.mac));
+}
+// Retorna uma String com o valor do mac address
+String macToString(const unsigned char* mac) {
+  char buf[20];
+  snprintf(buf, sizeof(buf), "%02x:%02x:%02x:%02x:%02x:%02x",
+           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  return String(buf);
+}
+
 void startWebSocket() { // Start a WebSocket server
   webSocket.begin();                          // start the websocket server
   webSocket.onEvent(webSocketEvent);          // if there's an incomming websocket message, go to function 'webSocketEvent'
   Serial.println("WebSocket server started.");
-//  start heartbeat (optional)
-//  ping server every 15000 ms
-//  expect pong from server within 3000 ms
-//  consider connection disconnected if pong is not received 2 times
+  //  heartbeat (intervalo de ping, pong máximo, tentativas antes de desconectar)
   webSocket.enableHeartbeat(1000, 500, 3);
 }
 
@@ -51,11 +56,56 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         IPAddress ip = webSocket.remoteIP(num);
         Serial.printf("EVENTO WS: Connected from %d.%d.%d.%d url: %s\n", ip[0], ip[1], ip[2], ip[3], payload);
         // avisa o cliente
-        webSocket.sendTXT(num, "welcome");
+//        webSocket.sendTXT(num, "welcome");
       }
       break;
     case WStype_TEXT:                     // if new text data is received
       Serial.printf("EVENTO WS: get Text: %s\n", payload);
+
+      // Define o tipo de cliente
+      if(payload[0] == 'c') {
+        // Define como PC
+        if(payload[1] == 'p') {
+          for(int i=0; i<5; i++) {
+            if(pc[i] == -1) pc[i] = num;
+            break;
+            }
+          }
+        // Define como app
+        else if(payload[1] == 'a') {
+          for(int i=0; i<5; i++) {
+            if(app[i] == -1) app[i] = num;
+            break;
+            }
+          }
+        }
+
+        // Comando para atualizar os sensores
+        else if(payload[0] == 'a') {
+          leituraSensores();
+          for(int i=0; i<30; i++) Serial.print(sensores[i]);
+          Serial.println();
+          webSocket.sendTXT(num, sensores, 30);
+        }
+
+        // Comando direto para os motores
+        else if(payload[0] == 'm') {
+          char velE[4], velD[4];
+          int pos = 1;
+          // Lê até encontrar uma vírgula
+          while(payload[pos] != 44) {
+            velE[pos-1] = payload[pos];
+          }
+            pos++;
+          // Lê até o final
+         while(payload[pos] != 0) {
+          velD[pos-1] = payload[pos];
+         }
+
+         Serial.println();
+        }
+
+
 
 //      if (payload[0] == 'a') acoes(payload);
 //      else if (payload[0] == 'm') movimento(payload);

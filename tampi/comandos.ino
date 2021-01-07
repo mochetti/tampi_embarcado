@@ -66,14 +66,26 @@ int classifica(int analog) {
   return valor;
 }
 
+// atualiza o array sensores[] com todos as leituras
+void leituraSensores() {
+  for(int i=0; i<30; i++) sensores[i] = 0;
+
+  sprintf(sensores, "s%d,%d,%d,%d", 123, 314, 1234, 44);
+  
+//  for(int i=0; i<30; i++) Serial.print(dados[i]);
+//  Serial.println();  
+
+  }
+
 // aqui que a brincadeira começa
 void acao(int i) {
   Serial.print("ACAO: ");
   Serial.print(i);
   Serial.print(" - ");
+  Serial.println(cores[i]);
   switch (i) {
     case 0:         // vazio
-      Serial.println("vazio");
+//      Serial.println("vazio");
       break;
 
     case 1:     //cinza - loop (trava o código)
