@@ -15,6 +15,15 @@ boolean wifi = true;
 unsigned long tempo = 0;
 unsigned long ultimaConexao = 0;
 
+int pulsosEncoderEsq = 0;
+int pulsosEncoderDir = 0;
+bool encoderEsqPreto = false;
+bool encoderDirPreto = false;
+unsigned long tempoEncEsq = 0;
+unsigned long tempoEncDir = 0;
+int velEsq = 0;
+int velDir = 0;
+
 char sensores[30];
 
 const char *ssid = "Tampi";        // essas informações estão no QRCode (?)
@@ -100,5 +109,7 @@ void loop() {
 //    }
     delay(1000);
   }
-  
+
+  // atualiza a leitura dos encoders
+  // encoders();
 }

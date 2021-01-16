@@ -124,6 +124,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         }
 
         // Andar uma distância específica
+        // aXXX;
         else if(payload[0] == 'a') {
           char dist[4];
           int pos = 1;
@@ -145,6 +146,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t lenght
         }
 
         // Andar uma distância específica
+        // gXXX;
         else if(payload[0] == 'g') {
           Serial.println("girando");
           delay(5500);

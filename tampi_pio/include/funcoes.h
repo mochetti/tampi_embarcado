@@ -85,13 +85,22 @@ const int analogExtra4 = 17;
 
 // Variáveis globais
 
-extern WebSocketsServer webSocket;    // create a websocket server on port 81
+extern WebSocketsServer webSocket;  // servidor websocket
 extern WiFiEventHandler stationConnectedHandler;
 extern WiFiEventHandler stationDisconnectedHandler;
 
 extern boolean wifi;
 extern unsigned long tempo;
 extern unsigned long ultimaConexao;
+
+extern int pulsosEncoderEsq;
+extern int pulsosEncoderDir;
+extern bool encoderEsqPreto;
+extern bool encoderDirPreto;
+extern unsigned long tempoEncEsq;
+extern unsigned long tempoEncDir;
+extern int velEsq;
+extern int velDir;
 
 extern char sensores[30];
 
@@ -132,6 +141,7 @@ void buzina(int, int);
 void funcaoEsq();
 void funcaoDir();
 int classifica(int);
+void encoders();
 void conexaoCliente(const WiFiEventSoftAPModeStationConnected&);
 void desconexaoCliente(const WiFiEventSoftAPModeStationDisconnected&);
 String macToString(const unsigned char*);

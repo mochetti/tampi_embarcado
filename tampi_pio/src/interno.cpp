@@ -31,18 +31,18 @@ int aRead(int pino) {
 
 /*  valores analogicos
 
-     marrom - 1018
-     verde - 933
-     branco - 814
-     vermelho - 732
-     dourado - 686
-     lilas - 598
-     azul - 462
-     laranja - 364
-     amarelo - 169
-     preto - 67
-     rosa - 44
-     cinza - 31
+  marrom - 1018
+  verde - 933
+  branco - 814
+  vermelho - 732
+  dourado - 686
+  lilas - 598
+  azul - 462
+  laranja - 364
+  amarelo - 169
+  preto - 67
+  rosa - 44
+  cinza - 31
 
 */
 
@@ -83,3 +83,30 @@ void leituraSensores() {
 //  Serial.println();  
 
   }
+
+void encoders() {
+  int leituraEsq = aRead(encEsqPin);
+  int leituraDir = aRead(encDirPin);
+  if(leituraEsq > 400 && encoderEsqPreto) {
+    encoderEsqPreto = false;
+    pulsosEncoderEsq++;
+  }
+  else if(leituraEsq < 400 && !encoderEsqPreto) {
+    encoderEsqPreto = true;
+    pulsosEncoderEsq++;
+  }
+  if(leituraDir > 400 && encoderDirPreto) {
+    encoderDirPreto = false;
+    pulsosEncoderDir++;
+  }
+  else if(leituraDir < 400 && !encoderDirPreto) {
+    encoderDirPreto = true;
+    pulsosEncoderDir++;
+  }
+}
+
+float pd(float s, float ds) {
+  float kp = 0.5;
+  float kd = 0.5;
+  
+}
