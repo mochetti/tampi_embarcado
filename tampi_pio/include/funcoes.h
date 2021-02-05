@@ -14,9 +14,9 @@ const int pwmDir = D8;
 const int echoPin = D2;  // echo do ultrassonico
 const int trigPin = D3;  // trig do ultrassonico
 
-const int clkPin = D5;   // clk do 74595
+const int dataPin = D5;  // dados seriais do 74595
 const int latchPin = D6; // latch do 74595
-const int dataPin = D7;  // dados seriais do 74595
+const int clkPin = D7;   // clk do 74595
 
 const int buzzerPin = D0;
 
@@ -146,5 +146,6 @@ void conexaoCliente(const WiFiEventSoftAPModeStationConnected&);
 void desconexaoCliente(const WiFiEventSoftAPModeStationDisconnected&);
 String macToString(const unsigned char*);
 void webSocketEvent(uint8_t, WStype_t, uint8_t *, size_t);
+void freq();
 
 #endif

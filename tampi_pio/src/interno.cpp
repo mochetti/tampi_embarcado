@@ -13,7 +13,7 @@ void dWrite(int pino, int estado) {
 // envio de comandos para os 74595
 void shift() {
   digitalWrite(latchPin, LOW);  // latch em nível baixo
-  for (int i = 0; i < 4; i++) shiftOut(dataPin, clkPin, LSBFIRST, shiftPinos[i]); // carrega as informações
+  for (int i = 0; i < 5; i++) shiftOut(dataPin, clkPin, LSBFIRST, shiftPinos[i]); // carrega as informações
   digitalWrite(latchPin, HIGH); // latch em nível alto
 }
 

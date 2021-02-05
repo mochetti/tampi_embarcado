@@ -11,7 +11,7 @@ WebSocketsServer webSocket(81);    // create a websocket server on port 81
 WiFiEventHandler stationConnectedHandler;
 WiFiEventHandler stationDisconnectedHandler;
 
-boolean wifi = true;
+boolean wifi = false;
 unsigned long tempo = 0;
 unsigned long ultimaConexao = 0;
 
@@ -54,6 +54,10 @@ int app[] = {-1, -1, -1, -1, -1};
 const int velGeral = 60;
 const int tempoGiroEixo = 200;
 
+unsigned int samplingPeriod;
+#define SAMPLING_FREQUENCY 2048 //Ts = Based on Nyquist, must be 2 times the highest expected frequency.
+
+
 void setup() {
 
   // Declara os pinos
@@ -66,13 +70,15 @@ void setup() {
   pinMode(buzzerPin, OUTPUT);
 
   digitalWrite(latchPin, HIGH);
+  samplingPeriod = round(1000000*(1.0/SAMPLING_FREQUENCY)); //Period in microseconds 
+
 
   Serial.begin(115200);        // em 9600 notei atrasos no websocket
 
   // motor(0, 0);
 
-  startAP();
-  if(wifi) startWS();
+  // startAP();
+  // if(wifi) startWS();
 
   Serial.println("fim do setup");
   delay(10);
@@ -102,12 +108,21 @@ void loop() {
 
   // Não há conexão
   else {
-//    sensores();
 //    leitura();
 //    for (int i = 0; i < 8; i++) {
 //      acao(tampinhasTopo[i]);           // tampinhas do topo
 //    }
-    delay(1000);
+    // Serial.println(aRead(micPin));
+    // delay(100);
+    // freq();
+    // for(int i=0; i<6; i++) {
+    //   Serial.print(aRead(tampinhasDirPin[i]));
+    //   Serial.print("  ");
+    // }
+    // Serial.println();
+    // delay(100);
+    Serial.println(aRead(ldrDirPin));
+    delay(100);
   }
 
   // atualiza a leitura dos encoders
